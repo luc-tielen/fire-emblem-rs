@@ -1,0 +1,6 @@
+[package]
+name = "fire-emblem-rs"
+version = "0.1.0"
+authors = ["Luc Tielen <luc.tielen@gmail.com>"]
+
+[dependencies]
