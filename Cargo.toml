@@ -4,3 +4,7 @@ version = "0.1.0"
 authors = ["Luc Tielen <luc.tielen@gmail.com>"]
 
 [dependencies]
+gtk = "^0.2.0"
+relm = "^0.10.1"
+relm-derive = "^0.10.0"
+image = "0.17.0"
