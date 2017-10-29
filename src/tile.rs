@@ -2,7 +2,7 @@
 use gdk_pixbuf::Pixbuf;
 
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct Tile {
     pub img: Pixbuf,
     pub tile_width: u32,
@@ -26,7 +26,6 @@ impl Tile {
     }
 
     pub fn is_empty(&self) -> bool {
-        let pxl_count = (self.tile_width * self.tile_height) as usize;
         unsafe {
             let pxls = self.img.get_pixels();
             for byte in pxls {

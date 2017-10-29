@@ -1,7 +1,7 @@
 
 #![feature(proc_macro)]
+#![feature(refcell_replace_swap)]
 
-extern crate image;
 extern crate cairo;
 extern crate gdk;
 extern crate gdk_pixbuf;
@@ -15,6 +15,9 @@ extern crate relm_attributes;
 
 mod tileset;
 mod tile;
+mod gui_helpers;
+mod map_drawing_area;
+mod tile_chooser;
 mod gui;
 
 use relm::Widget;
