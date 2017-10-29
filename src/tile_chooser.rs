@@ -4,10 +4,12 @@ use relm_attributes::widget;
 use gtk;
 use gtk::{WidgetExt, BoxExt};
 use gdk;
+use gdk::ContextExt;
 use gdk::EventButton;
 use cairo;
 use std::rc::Rc;
 use std::cell::Cell;
+use std::iter::Iterator;
 use self::TileChooserMsg::*;
 use gui_helpers::MousePos;
 use tile::Tile;
@@ -15,13 +17,15 @@ use tile::Tile;
 
 #[derive(Msg)]
 pub enum TileChooserMsg {
-    LeftMouseClicked(usize),   // index to clicked tile
+    // index to clicked tile, can be out of bounds:
+    LeftMouseClicked(Option<usize>),
     ChooserResized(u32, u32),  // width, height
 }
 
 
 #[derive(Debug, Clone, Copy)]
 struct TileMetadata {
+    num_tiles: usize,
     tile_width: u32,
     tile_height: u32,
 }
@@ -37,13 +41,30 @@ pub struct Model {
 
 
 impl TileChooser {
-    fn draw(&self) {
+    fn draw_tile_chooser(&self) {
         let width = self.get_map_width();
         let height = self.get_map_height();
-        let tiles_per_row = width / self.model.tile_width;
+        let tile_width = self.model.tile_data.get().tile_width;
+        let tiles_per_row = width / tile_width;
 
+        let ctx = self.get_drawing_context();
+        ctx.rectangle(0.0, 0.0, width as f64, height as f64);
+        ctx.fill();
 
-        // TODO draw.
+        for (tile_idx, tile) in self.model.tiles.iter().enumerate() {
+            self.draw_tile(&ctx, tile_idx as u32, tile, tiles_per_row);
+        }
+    }
+
+    fn draw_tile(&self, ctx: &cairo::Context,
+                 tile_idx: u32, tile: &Tile,
+                 tiles_per_row: u32) {
+        let row = tile_idx / tiles_per_row;
+        let col = tile_idx % tiles_per_row;
+        let x = col * tile.tile_width;
+        let y = row * tile.tile_height;
+        ctx.set_source_pixbuf(&tile.img, x as f64, y as f64);
+        ctx.paint();
     }
 
     fn get_drawing_context(&self) -> cairo::Context {
@@ -67,11 +88,12 @@ impl Widget for TileChooser {
         let tile_data = {
             let first_tile = &tiles[0];
             TileMetadata {
+                num_tiles: tiles.len(),
                 tile_width: first_tile.tile_width,
                 tile_height: first_tile.tile_height,
             }
         };
-        
+
         Model {
             selected_tile: 0,
             tiles: tiles,
@@ -83,9 +105,11 @@ impl Widget for TileChooser {
 
     fn update(&mut self, event: TileChooserMsg) {
         match event {
-            LeftMouseClicked(tile_idx) => {
-                self.model.selected_tile = tile_idx;
-                self.draw();
+            LeftMouseClicked(maybe_tile_idx) => {
+                if let Some(tile_idx) = maybe_tile_idx {
+                    self.model.selected_tile = tile_idx;
+                }
+                self.draw_tile_chooser();
             },
             ChooserResized(width, height) => {
                 self.model.chooser_width.set(width);
@@ -125,12 +149,15 @@ fn send_click_cmd(rc_chooser_width: Rc<Cell<u32>>,
 
     let chooser_width = rc_chooser_width.get();
     let tile_data = rc_tile_data.get();
-    let tile_width = &tile_data.tile_width;
-    let tile_height = &tile_data.tile_height;
-    let tiles_per_row = chooser_width / tile_width;
-    let sel_col = pos.x as u32 / tile_height;
-    let sel_row = (pos.y as u32 / tile_height) * tiles_per_row;
-    let tile_idx = sel_row * tiles_per_row + sel_col;
-    LeftMouseClicked(tile_idx as usize)
+    let tiles_per_row = chooser_width / tile_data.tile_width;
+    let sel_col = pos.x as u32 / tile_data.tile_height;
+    let sel_row = pos.y as u32 / tile_data.tile_height;
+    let tile_idx = (sel_row * tiles_per_row + sel_col) as usize;
+    if tile_idx >= tile_data.num_tiles {
+        LeftMouseClicked(None)
+    }
+    else {
+        LeftMouseClicked(Some(tile_idx))
+    }
 }
 

@@ -18,7 +18,7 @@ pub struct Model {
 
 #[derive(Msg)]
 pub enum Msg {
-    ChooserSelectedTile(usize),  // TODO rename
+    ChooserSelectedTile(Option<usize>),  // TODO rename
     Quit,
 }
 
@@ -33,10 +33,12 @@ impl Widget for GUI {
 
     fn update(&mut self, event: Msg) {
         match event {
-            ChooserSelectedTile(tile_idx) => {
-                let tile = self.model.loaded_tiles[tile_idx].clone();
-                let child_event = TileSelected(tile);
-                self.map_area.emit(child_event);
+            ChooserSelectedTile(maybe_tile_idx) => {
+                if let Some(tile_idx) = maybe_tile_idx {
+                    let tile = self.model.loaded_tiles[tile_idx].clone();
+                    let child_event = TileSelected(tile);
+                    self.map_area.emit(child_event);
+                }
             },
             Quit => gtk::main_quit(),
         }
