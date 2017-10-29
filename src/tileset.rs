@@ -1,17 +1,12 @@
 
 use std::iter::repeat;
-use std::path::Path;
-use std::cell::RefCell;
-use image;
-use image::{
-    RgbaImage,
-};
+use gdk_pixbuf::Pixbuf;
 use tile::Tile;
 
 
 #[derive(Debug)]
 pub struct Tileset {
-    tiles: RefCell<RgbaImage>,
+    tiles: Pixbuf,
     tile_width: u32,
     tile_height: u32,
 }
@@ -25,10 +20,9 @@ pub struct Dimensions {
 
 
 impl Tileset {
-    pub fn new(tileset_path: &Path, tile_width: u32, tile_height: u32) -> Tileset {
-        let img = image::open(tileset_path).unwrap();
+    pub fn new(tileset_path: &str, tile_width: u32, tile_height: u32) -> Tileset {
         let tileset = Tileset {
-            tiles: RefCell::new(img.to_rgba()),
+            tiles: Pixbuf::new_from_file(&tileset_path).unwrap(),
             tile_width: tile_width,
             tile_height: tile_height,
         };
@@ -38,10 +32,9 @@ impl Tileset {
     }
 
     pub fn dimensions(&self) -> Dimensions {
-        let dim = self.tiles.borrow().dimensions();
         Dimensions {
-            width: dim.0,
-            height: dim.1,
+            width: self.tiles.get_width() as u32,
+            height: self.tiles.get_height() as u32,
         }
     }
 

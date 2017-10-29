@@ -5,6 +5,10 @@ authors = ["Luc Tielen <luc.tielen@gmail.com>"]
 
 [dependencies]
 gtk = "^0.2.0"
+gdk = "^0.6.0"
+gdk-pixbuf = "0.2.0"
 relm = "^0.10.1"
 relm-derive = "^0.10.0"
+relm-attributes = "^0.10.0"
 image = "0.17.0"
+cairo-rs = "^0.2.0"
