@@ -38,6 +38,11 @@ impl Map {
     pub fn get_tile<'a>(&'a self, loc: MapLocation) -> &'a Option<Tile> {
         &self[loc]
     }
+
+    pub fn clear_tile(&mut self, loc: MapLocation) {
+        if loc.x >= self.width || loc.y >= self.height { return; }
+        self[loc] = None
+    }
 }
 
 

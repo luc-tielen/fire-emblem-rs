@@ -27,7 +27,7 @@ pub struct Model {
 #[derive(Msg)]
 pub enum Msg {
     TimerExpired(()),
-    ChooserSelectedTile(Option<usize>), // TODO rename
+    ChooserSelectedTile(Option<usize>),
     Quit,
 }
 

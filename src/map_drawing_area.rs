@@ -23,6 +23,7 @@ pub struct Model {
 pub enum MapDrawingAreaMsg {
     TimerExpired,
     LeftMouseClicked(MousePos),
+    RightMouseClicked(MousePos),
     TileSelected(Tile),
 }
 
@@ -65,6 +66,12 @@ impl MapDrawingArea {
     fn get_map_height(&self) -> u32 {
         self.map_area.get_allocated_height() as u32
     }
+
+    fn mouse_to_map_loc(&self, pos: MousePos) -> MapLocation {
+        let map_x = pos.x as u16 / self.model.selected_tile.tile_width as u16;
+        let map_y = pos.y as u16 / self.model.selected_tile.tile_height as u16;
+        MapLocation { x: map_x, y: map_y }
+    }
 }
 
 
@@ -90,34 +97,41 @@ impl Widget for MapDrawingArea {
                 self.draw_map();
             },
             LeftMouseClicked(pos) => {
-                let map_x = pos.x as u16 / self.model.selected_tile.tile_width as u16;
-                let map_y = pos.y as u16 / self.model.selected_tile.tile_height as u16;
-                let loc = MapLocation { x: map_x, y: map_y };
+                let loc = self.mouse_to_map_loc(pos);
                 self.model.map.set_tile(self.model.selected_tile.clone(), loc);
                 self.draw_map();
-            }
+            },
+            RightMouseClicked(pos) => {
+                let loc = self.mouse_to_map_loc(pos);
+                self.model.map.clear_tile(loc);
+                self.draw_map();
+            },
             TileSelected(tile) => {
                 self.model.selected_tile = tile;
-            }
+            },
         }
     }
 
     view! {
         #[name="map_area"]
         gtk::DrawingArea {
-            events: gdk::BUTTON_PRESS_MASK.bits() as i32,
+            events: (gdk::BUTTON1_MASK | gdk::BUTTON3_MASK).bits() as i32,
             packing: {
                 expand: true,
                 fill: true,
             },
-            button_press_event(_, ev) => (send_draw_cmd(ev), gtk::Inhibit(false)),
+            button_press_event(_, ev) => (notify_mouse_click(ev), gtk::Inhibit(false)),
         }
     }
 }
 
 
-fn send_draw_cmd(ev: &EventButton) -> MapDrawingAreaMsg {
+fn notify_mouse_click(ev: &EventButton) -> MapDrawingAreaMsg {
     let pos = ev.get_position();
     let mouse_pos = MousePos { x: pos.0, y: pos.1 };
-    LeftMouseClicked(mouse_pos)
+    match ev.get_button() {
+        1 => LeftMouseClicked(mouse_pos),
+        3 => RightMouseClicked(mouse_pos),
+        _ => RightMouseClicked(mouse_pos),
+    }
 }
