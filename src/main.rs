@@ -1,13 +1,13 @@
 
 #![feature(proc_macro)]
 #![feature(refcell_replace_swap)]
-#![feature(conservative_impl_trait)]
 
-extern crate futures;
 extern crate cairo;
 extern crate gdk;
 extern crate gdk_pixbuf;
 extern crate gtk;
+extern crate futures;
+extern crate futures_glib;
 #[macro_use]
 extern crate relm;
 #[macro_use]

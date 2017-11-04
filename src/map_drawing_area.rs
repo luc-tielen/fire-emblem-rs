@@ -21,7 +21,7 @@ pub struct Model {
 
 #[derive(Msg)]
 pub enum MapDrawingAreaMsg {
-    InitialLoad,
+    TimerExpired,
     LeftMouseClicked(MousePos),
     TileSelected(Tile),
 }
@@ -82,11 +82,12 @@ impl Widget for MapDrawingArea {
 
     fn update(&mut self, event: MapDrawingAreaMsg) {
         match event {
-            InitialLoad => {
+            TimerExpired => {
                 let ctx = self.get_drawing_context();
                 let width = self.get_map_width() as f64;
                 let height = self.get_map_height() as f64;
                 self.draw_background(&ctx, width, height);
+                self.draw_map();
             },
             LeftMouseClicked(pos) => {
                 let map_x = pos.x as u16 / self.model.selected_tile.tile_width as u16;

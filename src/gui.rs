@@ -4,9 +4,7 @@ use relm_attributes::widget;
 use gtk;
 use gtk::{WidgetExt, OrientableExt};
 use gtk::Orientation::Horizontal;
-use futures::Future;
-use futures::future;
-use std::thread;
+use futures_glib::Interval;
 use std::time::Duration;
 use self::Msg::*;
 use tile::Tile;
@@ -28,7 +26,7 @@ pub struct Model {
 
 #[derive(Msg)]
 pub enum Msg {
-    InitialLoad(()),
+    TimerExpired(()),
     ChooserSelectedTile(Option<usize>), // TODO rename
     Quit,
 }
@@ -48,19 +46,15 @@ impl Widget for GUI {
     }
 
     fn subscriptions(&mut self, relm: &Relm<Self>) {
-        let stream = ok_fut().and_then(|_| {
-            thread::sleep(Duration::from_millis(300));
-            ok_fut()
-            // TODO ask focus also!
-        });
-        relm.connect_exec_ignore_err(stream, InitialLoad);
+        let stream = Interval::new(Duration::from_millis(500));
+        relm.connect_exec_ignore_err(stream, TimerExpired);
     }
 
     fn update(&mut self, event: Msg) {
         match event {
-            InitialLoad(_) => {
-                self.tile_chooser.emit(TCMsg::InitialLoad);
-                self.map_area.emit(MDAMsg::InitialLoad);
+            TimerExpired(_) => {
+                self.tile_chooser.emit(TCMsg::TimerExpired);
+                self.map_area.emit(MDAMsg::TimerExpired);
             }
             ChooserSelectedTile(maybe_tile_idx) => {
                 if let Some(tile_idx) = maybe_tile_idx {
@@ -92,7 +86,3 @@ impl Widget for GUI {
     }
 }
 
-
-fn ok_fut() -> impl Future<Item = (), Error = ()> {
-    future::ok::<(), ()>(())
-}

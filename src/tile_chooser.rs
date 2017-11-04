@@ -17,7 +17,7 @@ use tile::Tile;
 
 #[derive(Msg)]
 pub enum TileChooserMsg {
-    InitialLoad,
+    TimerExpired,
     // index to clicked tile, can be out of bounds:
     LeftMouseClicked(Option<usize>),
     ChooserResized(u32, u32), // width, height
@@ -104,7 +104,7 @@ impl Widget for TileChooser {
 
     fn update(&mut self, event: TileChooserMsg) {
         match event {
-            InitialLoad => self.draw_tile_chooser(),
+            TimerExpired => self.draw_tile_chooser(),
             LeftMouseClicked(maybe_tile_idx) => {
                 if let Some(tile_idx) = maybe_tile_idx {
                     self.model.selected_tile = tile_idx;
