@@ -17,9 +17,10 @@ use tile::Tile;
 
 #[derive(Msg)]
 pub enum TileChooserMsg {
+    InitialLoad,
     // index to clicked tile, can be out of bounds:
     LeftMouseClicked(Option<usize>),
-    ChooserResized(u32, u32),  // width, height
+    ChooserResized(u32, u32), // width, height
 }
 
 
@@ -32,7 +33,7 @@ struct TileMetadata {
 
 
 pub struct Model {
-    selected_tile: usize,  // tile index
+    selected_tile: usize, // tile index
     tiles: Vec<Tile>,
     tile_data: Rc<Cell<TileMetadata>>,
     chooser_width: Rc<Cell<u32>>,
@@ -56,9 +57,7 @@ impl TileChooser {
         }
     }
 
-    fn draw_tile(&self, ctx: &cairo::Context,
-                 tile_idx: u32, tile: &Tile,
-                 tiles_per_row: u32) {
+    fn draw_tile(&self, ctx: &cairo::Context, tile_idx: u32, tile: &Tile, tiles_per_row: u32) {
         let row = tile_idx / tiles_per_row;
         let col = tile_idx % tiles_per_row;
         let x = col * tile.tile_width;
@@ -105,23 +104,23 @@ impl Widget for TileChooser {
 
     fn update(&mut self, event: TileChooserMsg) {
         match event {
+            InitialLoad => self.draw_tile_chooser(),
             LeftMouseClicked(maybe_tile_idx) => {
                 if let Some(tile_idx) = maybe_tile_idx {
                     self.model.selected_tile = tile_idx;
                 }
                 self.draw_tile_chooser();
-            },
+            }
             ChooserResized(width, height) => {
                 self.model.chooser_width.set(width);
                 self.model.chooser_height = height;
-            },
+            }
         }
     }
 
     view! {
         #[name="chooser"]
         gtk::DrawingArea {
-            can_focus: true,
             events: gdk::BUTTON_PRESS_MASK.bits() as i32,
             packing: {
                 expand: true,
@@ -138,9 +137,11 @@ impl Widget for TileChooser {
 }
 
 
-fn send_click_cmd(rc_chooser_width: Rc<Cell<u32>>,
-                  rc_tile_data: Rc<Cell<TileMetadata>>,
-                  ev: &EventButton) -> TileChooserMsg {
+fn send_click_cmd(
+    rc_chooser_width: Rc<Cell<u32>>,
+    rc_tile_data: Rc<Cell<TileMetadata>>,
+    ev: &EventButton,
+) -> TileChooserMsg {
     let mouse_pos = ev.get_position();
     let pos = MousePos {
         x: mouse_pos.0,
@@ -155,9 +156,7 @@ fn send_click_cmd(rc_chooser_width: Rc<Cell<u32>>,
     let tile_idx = (sel_row * tiles_per_row + sel_col) as usize;
     if tile_idx >= tile_data.num_tiles {
         LeftMouseClicked(None)
-    }
-    else {
+    } else {
         LeftMouseClicked(Some(tile_idx))
     }
 }
-
