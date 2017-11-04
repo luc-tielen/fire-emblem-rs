@@ -38,7 +38,7 @@ impl Tileset {
         }
     }
 
-    pub fn slice(& self) -> Vec<Tile> {
+    pub fn slice(&self) -> Vec<Tile> {
         let dim = self.dimensions();
         let num_rows = dim.width / self.tile_width;
         let num_columns = dim.height / self.tile_height;
@@ -47,17 +47,9 @@ impl Tileset {
 
         rows.flat_map(|row| repeat(row).zip(columns.clone()))
             .filter_map(|(row, col)| {
-                let tile = Tile::new(&self.tiles, self.tile_width,
-                                     self.tile_height, row, col);
-                if tile.is_empty() {
-                    None
-                }
-                else {
-                  Some(tile)
-                }
+                let tile = Tile::new(&self.tiles, self.tile_width, self.tile_height, row, col);
+                if tile.is_empty() { None } else { Some(tile) }
             })
             .collect()
     }
 }
-
-

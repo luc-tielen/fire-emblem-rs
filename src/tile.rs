@@ -11,15 +11,22 @@ pub struct Tile {
 
 
 impl Tile {
-    pub fn new(tileset_img: &Pixbuf,
-               tile_width: u32, tile_height: u32,
-               row: u32, col: u32) -> Tile {
+    pub fn new(
+        tileset_img: &Pixbuf,
+        tile_width: u32,
+        tile_height: u32,
+        row: u32,
+        col: u32,
+    ) -> Tile {
         let x = row * tile_width;
         let y = col * tile_height;
         Tile {
-            img: tileset_img.new_subpixbuf(x as i32, y as i32,
-                                           tile_width as i32,
-                                           tile_height as i32),
+            img: tileset_img.new_subpixbuf(
+                x as i32,
+                y as i32,
+                tile_width as i32,
+                tile_height as i32,
+            ),
             tile_width: tile_width,
             tile_height: tile_height,
         }
@@ -31,7 +38,9 @@ impl Tile {
             for byte in pxls {
                 // if any of the pixels bytes is non-zero,
                 // -> not completely black -> not empty
-                if byte != &0 { return false; }
+                if byte != &0 {
+                    return false;
+                }
             }
         }
         true
